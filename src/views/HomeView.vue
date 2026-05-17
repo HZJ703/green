@@ -300,18 +300,41 @@ const overviewStats = computed(() => [
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 460px);
-  gap: 1.25rem;
-  padding: clamp(1.2rem, 3vw, 2.4rem) clamp(1rem, 3vw, 2rem);
+  gap: 1rem;
+  padding: clamp(1rem, 2.4vw, 2rem) clamp(1rem, 3vw, 2rem);
   background:
     radial-gradient(circle at 18% 26%, rgba(205, 245, 191, 0.18), transparent 30%),
     linear-gradient(135deg, rgba(67, 171, 130, 0.32), rgba(72, 189, 151, 0.14));
   border-bottom: 1px solid rgba(205, 239, 210, 0.2);
 }
 
+.hero__content {
+  width: fit-content;
+  max-width: 680px;
+  position: relative;
+}
+
+.hero__content::before {
+  content: '';
+  position: absolute;
+  inset: -1.4rem -3.5rem -1.2rem -1.6rem;
+  background:
+    radial-gradient(ellipse at 24% 42%, rgba(14, 77, 65, 0.34), transparent 58%),
+    radial-gradient(ellipse at 0% 18%, rgba(16, 88, 72, 0.18), transparent 52%);
+  pointer-events: none;
+}
+
+.hero__content > * {
+  position: relative;
+  z-index: 1;
+}
+
 .hero__eyebrow {
-  color: #e7f5b8;
+  color: #f0f8bd;
+  font-weight: 600;
   font-size: 0.82rem;
   letter-spacing: 0.28em;
+  text-shadow: 0 1px 8px rgba(12, 69, 58, 0.18);
 }
 
 .hero__title {
@@ -320,20 +343,24 @@ const overviewStats = computed(() => [
   font-size: clamp(2.55rem, 5.8vw, 4.8rem);
   line-height: 0.95;
   letter-spacing: 0.08em;
-  color: #fbfff7;
-  text-shadow: 0 16px 40px rgba(20, 98, 72, 0.2);
+  color: #fffdf1;
+  text-shadow:
+    0 1px 8px rgba(13, 71, 60, 0.24),
+    0 10px 24px rgba(20, 98, 72, 0.14);
 }
 
 .hero__subtitle {
   max-width: 520px;
   margin-top: 0.75rem;
-  color: rgba(248, 255, 249, 0.9);
+  color: rgba(251, 255, 247, 0.94);
   font-size: 0.98rem;
+  font-weight: 500;
+  text-shadow: 0 1px 8px rgba(13, 71, 60, 0.18);
 }
 
 .search {
   width: min(100%, 520px);
-  margin-top: 1.15rem;
+  margin-top: 0.95rem;
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -428,6 +455,19 @@ const overviewStats = computed(() => [
     background 0.2s ease;
 }
 
+.dashboard > .module:first-child {
+  border-color: rgba(196, 255, 206, 0.44);
+  box-shadow:
+    0 20px 48px rgba(16, 82, 64, 0.24),
+    0 0 0 1px rgba(217, 255, 191, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.dashboard > .module:first-child .module__mark {
+  background: rgba(217, 255, 191, 0.1);
+  box-shadow: 0 0 18px rgba(151, 232, 178, 0.22);
+}
+
 .module:hover {
   transform: translateY(-4px);
   border-color: rgba(181, 255, 205, 0.62);
@@ -498,6 +538,25 @@ const overviewStats = computed(() => [
     rgba(12, 72, 63, 0.42);
   position: relative;
   overflow: hidden;
+}
+
+.chart-space::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(213, 255, 220, 0.12) 1px, transparent 1.4px),
+    radial-gradient(circle at 72% 18%, rgba(143, 226, 176, 0.06), transparent 24%);
+  background-size:
+    28px 28px,
+    100% 100%;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.18));
+  pointer-events: none;
+}
+
+.chart-space > * {
+  position: relative;
+  z-index: 1;
 }
 
 .network-preview {

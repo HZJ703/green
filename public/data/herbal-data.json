@@ -1,0 +1,107 @@
+[
+  {
+    "name": "人参",
+    "efficacy": "补气",
+    "category": "补气药",
+    "origin": "吉林",
+    "nature": "温"
+  },
+  {
+    "name": "黄芪",
+    "efficacy": "补气",
+    "category": "补气药",
+    "origin": "山西",
+    "nature": "温"
+  },
+  {
+    "name": "白术",
+    "efficacy": "补气",
+    "category": "补气药",
+    "origin": "浙江",
+    "nature": "温"
+  },
+  {
+    "name": "茯苓",
+    "efficacy": "健脾",
+    "category": "补气药",
+    "origin": "云南",
+    "nature": "平"
+  },
+  {
+    "name": "甘草",
+    "efficacy": "调和",
+    "category": "调和药",
+    "origin": "内蒙古",
+    "nature": "平"
+  },
+  {
+    "name": "红枣",
+    "efficacy": "补血",
+    "category": "补血药",
+    "origin": "河南",
+    "nature": "温"
+  },
+  {
+    "name": "当归",
+    "efficacy": "补血",
+    "category": "补血药",
+    "origin": "甘肃",
+    "nature": "温"
+  },
+  {
+    "name": "黄连",
+    "efficacy": "清热",
+    "category": "清热药",
+    "origin": "四川",
+    "nature": "寒"
+  },
+  {
+    "name": "黄芩",
+    "efficacy": "清热",
+    "category": "清热药",
+    "origin": "河北",
+    "nature": "寒"
+  },
+  {
+    "name": "大黄",
+    "efficacy": "清热",
+    "category": "清热药",
+    "origin": "青海",
+    "nature": "寒"
+  },
+  {
+    "name": "桂枝",
+    "efficacy": "温阳",
+    "category": "温阳药",
+    "origin": "广西",
+    "nature": "温"
+  },
+  {
+    "name": "干姜",
+    "efficacy": "温阳",
+    "category": "温阳药",
+    "origin": "四川",
+    "nature": "热"
+  },
+  {
+    "name": "肉桂",
+    "efficacy": "温阳",
+    "category": "温阳药",
+    "origin": "广东",
+    "nature": "热"
+  },
+  {
+    "name": "麻黄",
+    "efficacy": "宣肺",
+    "category": "解表药",
+    "origin": "甘肃",
+    "nature": "温"
+  },
+  {
+    "name": "生姜",
+    "efficacy": "宣肺",
+    "category": "解表药",
+    "origin": "浙江",
+    "nature": "温"
+  }
+]

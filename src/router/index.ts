@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import CompatibilityView from '../views/CompatibilityView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +14,11 @@ const router = createRouter({
       path: '/herb-graph',
       name: 'herb-graph',
       component: () => import('../views/HerbGraphView.vue'),
+    },
+    {
+      path: '/compatibility',
+      name: 'compatibility',
+      component: CompatibilityView,
     },
     {
       path: '/origin-map',

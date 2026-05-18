@@ -66,7 +66,7 @@ const overviewStats = computed(() => [
       <RouterLink class="top-nav__brand" to="/">本草集</RouterLink>
       <div class="top-nav__links">
         <RouterLink to="/">首页</RouterLink>
-        <RouterLink to="/efficacy-network?view=compatibility">配伍关系</RouterLink>
+        <RouterLink to="/compatibility">配伍关系</RouterLink>
         <RouterLink to="/origin-map">产地地图</RouterLink>
         <RouterLink to="/herb-graph">草药图谱</RouterLink>
         <RouterLink to="/efficacy-network">功能聚类</RouterLink>
@@ -101,7 +101,7 @@ const overviewStats = computed(() => [
     </section>
 
     <section class="dashboard" aria-label="可视化模块总览">
-      <RouterLink class="module module--wide" to="/efficacy-network?view=compatibility">
+      <RouterLink class="module module--wide" to="/compatibility">
         <div class="module__header">
           <span class="module__mark">配</span>
           <div>
@@ -111,11 +111,11 @@ const overviewStats = computed(() => [
           <span class="module__action">进入模块</span>
         </div>
         <div class="chart-space network-preview" aria-hidden="true">
-          <span class="node node--main">君</span>
-          <span class="node node--a">臣</span>
-          <span class="node node--b">佐</span>
-          <span class="node node--c">使</span>
-          <span class="node node--d">引</span>
+          <span class="node node--main">关系</span>
+          <span class="node node--a">核心节点</span>
+          <span class="node node--b">关联节点</span>
+          <span class="node node--c">辅助节点</span>
+          <span class="node node--d">调和节点</span>
           <i class="line line--one"></i>
           <i class="line line--two"></i>
           <i class="line line--three"></i>
@@ -131,9 +131,15 @@ const overviewStats = computed(() => [
             <p>展示草药产区分布，当前先呈现真实产地排行。</p>
           </div>
         </div>
-        <div class="chart-space origin-preview">
-          <div class="ring" aria-hidden="true"><span>{{ topOrigins[0]?.value ?? 0 }}</span></div>
-          <ul>
+        <div class="chart-space map-preview">
+          <div class="map-thumb" aria-hidden="true">
+            <div class="china-shape"></div>
+            <span class="map-marker map-marker--one"></span>
+            <span class="map-marker map-marker--two"></span>
+            <span class="map-marker map-marker--three"></span>
+            <span class="map-marker map-marker--four"></span>
+          </div>
+          <ul class="origin-rank">
             <li v-for="origin in topOrigins" :key="origin.name">
               <span>{{ origin.name }}</span>
               <strong>{{ origin.value }} 种</strong>
@@ -216,18 +222,44 @@ const overviewStats = computed(() => [
             <p>展示药性特征与归经分布统计。</p>
           </div>
         </div>
-        <div class="chart-space meridian-preview">
-          <div class="nature-list">
-            <span v-for="nature in topNatures" :key="nature.name">{{ nature.name }}</span>
-          </div>
-          <div class="meridian-bars" aria-hidden="true">
-            <i
-              v-for="meridian in topMeridians"
-              :key="meridian.name"
-              :style="{ height: `${Math.max(28, meridian.value * 9)}%` }"
-            >
-              <span>{{ meridian.name }}</span>
-            </i>
+        <div class="chart-space property-preview">
+          <div class="property-mini-dashboard" aria-hidden="true">
+            <div class="property-mini-charts">
+              <div class="property-mini-card">
+                <span class="property-mini-title">五性分布</span>
+                <div class="property-pie"></div>
+                <div class="property-legend">
+                  <i>寒</i>
+                  <i>热</i>
+                  <i>温</i>
+                  <i>凉</i>
+                  <i>平</i>
+                </div>
+              </div>
+              <div class="property-mini-card">
+                <span class="property-mini-title">药性分类</span>
+                <div class="property-donut">
+                  <span>{{ topNatures.length }}</span>
+                </div>
+                <div class="property-note">品种占比</div>
+              </div>
+            </div>
+            <div class="meridian-mini-panel">
+              <div class="meridian-mini-head">
+                <span>十二经脉归经统计</span>
+                <em>条形图</em>
+              </div>
+              <div class="meridian-ranked-bars">
+                <i
+                  v-for="meridian in topMeridians"
+                  :key="meridian.name"
+                  :style="{ width: `${Math.min(96, Math.max(28, meridian.value * 7))}%` }"
+                >
+                  <span>{{ meridian.name }}</span>
+                  <strong>{{ meridian.value }}</strong>
+                </i>
+              </div>
+            </div>
           </div>
         </div>
       </RouterLink>
@@ -583,53 +615,78 @@ const overviewStats = computed(() => [
 
 .node {
   position: absolute;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #86dda9;
+  min-width: 4.4rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.55rem;
+  border: 1px solid rgba(215, 247, 181, 0.36);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 255, 236, 0.42), transparent 28%),
+    linear-gradient(145deg, rgba(134, 221, 169, 0.95), rgba(70, 174, 132, 0.9));
   color: #155640;
+  font-size: 0.78rem;
   font-weight: 700;
-  box-shadow: 0 0 0 8px rgba(137, 231, 173, 0.13);
+  box-shadow:
+    0 0 0 6px rgba(137, 231, 173, 0.1),
+    0 10px 18px rgba(10, 55, 45, 0.14);
+}
+
+.node em {
+  color: rgba(21, 86, 64, 0.78);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 600;
 }
 
 .node--main {
   left: 50%;
   top: 44%;
-  width: 3.3rem;
-  height: 3.3rem;
-  background: #e3ee96;
+  min-width: 3.6rem;
+  height: 3rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 236, 0.72), transparent 26%),
+    linear-gradient(145deg, #e8f2a6, #9ee9b9);
   transform: translate(-50%, -50%);
+  font-size: 0.92rem;
+  box-shadow:
+    0 0 0 9px rgba(227, 238, 150, 0.08),
+    0 0 26px rgba(145, 229, 173, 0.22),
+    0 12px 24px rgba(10, 55, 45, 0.16);
 }
 
 .node--a {
-  left: 22%;
-  top: 22%;
+  left: 14%;
+  top: 18%;
 }
 
 .node--b {
-  right: 20%;
+  right: 11%;
   top: 18%;
 }
 
 .node--c {
-  left: 28%;
-  bottom: 18%;
+  left: 18%;
+  bottom: 16%;
 }
 
 .node--d {
-  right: 23%;
-  bottom: 20%;
+  right: 14%;
+  bottom: 18%;
 }
 
 .line {
   position: absolute;
   left: 50%;
   top: 45%;
-  width: 28%;
-  height: 1px;
-  background: rgba(210, 246, 178, 0.34);
+  width: 24%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(227, 238, 150, 0.4), rgba(134, 221, 169, 0.08));
   transform-origin: left center;
 }
 
@@ -649,47 +706,99 @@ const overviewStats = computed(() => [
   transform: rotate(34deg);
 }
 
-.origin-preview {
+.map-preview {
   display: grid;
-  grid-template-columns: 142px 1fr;
+  grid-template-columns: minmax(160px, 1.05fr) 1fr;
   align-items: center;
   gap: 0.9rem;
   padding: 0.85rem;
 }
 
-.ring {
-  width: 118px;
-  aspect-ratio: 1;
+.map-thumb {
+  min-height: 128px;
+  position: relative;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: conic-gradient(#86dda9 0 72%, rgba(226, 239, 151, 0.82) 72% 86%, rgba(255, 255, 255, 0.16) 86%);
-  position: relative;
 }
 
-.ring::after {
+.china-shape {
+  width: min(100%, 170px);
+  height: 112px;
+  border: 1px solid rgba(215, 247, 181, 0.34);
+  border-radius: 48% 42% 44% 36% / 38% 44% 48% 52%;
+  background:
+    radial-gradient(circle at 58% 42%, rgba(145, 229, 173, 0.4), transparent 13%),
+    radial-gradient(circle at 36% 46%, rgba(227, 238, 150, 0.32), transparent 16%),
+    linear-gradient(145deg, rgba(61, 156, 120, 0.54), rgba(20, 93, 77, 0.58));
+  box-shadow:
+    inset 0 0 30px rgba(145, 229, 173, 0.12),
+    0 14px 28px rgba(10, 55, 45, 0.14);
+  clip-path: polygon(
+    12% 42%,
+    22% 24%,
+    42% 18%,
+    56% 26%,
+    70% 20%,
+    88% 36%,
+    82% 54%,
+    92% 70%,
+    68% 82%,
+    44% 74%,
+    28% 86%,
+    18% 66%
+  );
+}
+
+.map-marker {
+  position: absolute;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  background: #e3ee96;
+  box-shadow:
+    0 0 0 5px rgba(227, 238, 150, 0.1),
+    0 0 18px rgba(145, 229, 173, 0.38);
+}
+
+.map-marker::after {
   content: '';
   position: absolute;
-  inset: 16px;
+  inset: -0.35rem;
+  border: 1px solid rgba(227, 238, 150, 0.28);
   border-radius: 50%;
-  background: #2f8f70;
 }
 
-.ring span {
-  position: relative;
-  z-index: 1;
-  color: #fbfff7;
-  font-size: 1.55rem;
-  font-weight: 700;
+.map-marker--one {
+  left: 28%;
+  top: 34%;
 }
 
-.origin-preview ul {
+.map-marker--two {
+  left: 48%;
+  top: 48%;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.map-marker--three {
+  right: 22%;
+  top: 38%;
+}
+
+.map-marker--four {
+  right: 30%;
+  bottom: 24%;
+  width: 0.58rem;
+  height: 0.58rem;
+}
+
+.origin-rank {
   display: grid;
   gap: 0.52rem;
   list-style: none;
 }
 
-.origin-preview li {
+.origin-rank li {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -697,7 +806,7 @@ const overviewStats = computed(() => [
   font-size: 0.9rem;
 }
 
-.origin-preview strong {
+.origin-rank strong {
   color: #fbfff7;
 }
 
@@ -936,56 +1045,173 @@ const overviewStats = computed(() => [
   color: #fbfff7;
 }
 
-.meridian-preview {
-  display: grid;
-  grid-template-columns: 148px 1fr;
-  gap: 0.9rem;
+.property-preview {
   padding: 0.85rem;
 }
 
-.nature-list {
+.property-mini-dashboard {
   display: grid;
-  align-content: center;
-  gap: 0.48rem;
-}
-
-.nature-list span {
-  padding: 0.42rem 0.7rem;
-  border: 1px solid rgba(211, 246, 216, 0.2);
-  border-radius: 999px;
-  color: rgba(248, 255, 249, 0.82);
-  background: rgba(21, 93, 76, 0.22);
-  font-size: 0.88rem;
-}
-
-.meridian-bars {
-  min-height: 128px;
-  display: flex;
-  align-items: end;
-  justify-content: space-around;
-  gap: 0.8rem;
-  border-left: 1px solid rgba(211, 246, 216, 0.18);
-  border-bottom: 1px solid rgba(211, 246, 216, 0.18);
-  padding: 0.75rem 0.6rem 1.8rem;
-}
-
-.meridian-bars i {
-  width: 12%;
-  min-height: 44px;
-  display: block;
-  border-radius: 999px 999px 4px 4px;
-  background: linear-gradient(180deg, #e3ee96, #86dda9);
+  grid-template-columns: minmax(210px, 0.95fr) 1.35fr;
+  gap: 0.85rem;
+  align-items: stretch;
   position: relative;
 }
 
-.meridian-bars span {
+.property-mini-dashboard::before {
+  content: '药性特征 / 归经统计';
   position: absolute;
-  left: 50%;
-  bottom: -1.65rem;
-  transform: translateX(-50%);
+  left: 0.4rem;
+  top: -0.15rem;
+  padding: 0.12rem 0.48rem;
+  border: 1px solid rgba(227, 238, 150, 0.22);
+  border-radius: 999px;
+  background: rgba(12, 72, 63, 0.38);
+  color: rgba(251, 255, 247, 0.72);
+  font-size: 0.64rem;
+  z-index: 2;
+}
+
+.property-mini-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  padding-top: 0.8rem;
+}
+
+.property-mini-card,
+.meridian-mini-panel {
+  border: 1px solid rgba(211, 246, 216, 0.2);
+  border-radius: 14px;
+  background: rgba(21, 93, 76, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.property-mini-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.42rem;
+  min-height: 132px;
+  padding: 0.62rem;
+}
+
+.property-mini-title,
+.meridian-mini-head span {
+  color: rgba(248, 255, 249, 0.86);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.property-pie,
+.property-donut {
+  width: 68px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  position: relative;
+}
+
+.property-pie {
+  background:
+    conic-gradient(#6ad19a 0 28%, #9ee9b9 28% 48%, #e3ee96 48% 67%, rgba(145, 229, 173, 0.72) 67% 84%, rgba(255, 255, 255, 0.16) 84%),
+    rgba(12, 72, 63, 0.28);
+}
+
+.property-donut {
+  background:
+    conic-gradient(#e3ee96 0 42%, #86dda9 42% 72%, rgba(145, 229, 173, 0.42) 72%),
+    rgba(12, 72, 63, 0.28);
+}
+
+.property-donut::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  background: #1c705b;
+}
+
+.property-pie span,
+.property-donut span {
+  position: relative;
+  z-index: 1;
+  color: #fbfff7;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.property-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.24rem;
+}
+
+.property-legend i,
+.property-note {
   color: rgba(248, 255, 249, 0.7);
+  font-size: 0.64rem;
   font-style: normal;
+}
+
+.property-legend i {
+  padding: 0.12rem 0.28rem;
+  border-radius: 999px;
+  background: rgba(12, 72, 63, 0.25);
+}
+
+.meridian-mini-panel {
+  padding: 0.72rem;
+  padding-top: 1rem;
+}
+
+.meridian-mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.68rem;
+}
+
+.meridian-mini-head em {
+  padding: 0.16rem 0.42rem;
+  border: 1px solid rgba(227, 238, 150, 0.28);
+  border-radius: 999px;
+  color: #e3ee96;
+  font-size: 0.66rem;
+  font-style: normal;
+}
+
+.meridian-ranked-bars {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.meridian-ranked-bars i {
+  min-width: 34%;
+  height: 1.05rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.48rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, #91e5ad, #e3ee96),
+    rgba(12, 72, 63, 0.28);
+  color: rgba(18, 86, 64, 0.9);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.meridian-ranked-bars span {
+  font-size: 0.74rem;
   white-space: nowrap;
+}
+
+.meridian-ranked-bars strong {
+  justify-self: end;
+  font-size: 0.68rem;
 }
 
 @media (max-width: 1100px) {
@@ -1039,10 +1265,10 @@ const overviewStats = computed(() => [
 
   .hero__panel,
   .dashboard,
-  .origin-preview,
+  .map-preview,
   .herb-preview,
   .cluster-preview,
-  .meridian-preview {
+  .property-mini-dashboard {
     grid-template-columns: 1fr;
   }
 
@@ -1060,9 +1286,8 @@ const overviewStats = computed(() => [
     display: none;
   }
 
-  .ring {
-    width: 112px;
-    margin: 0 auto;
+  .property-mini-charts {
+    grid-template-columns: 1fr 1fr;
   }
 }
 </style>

@@ -106,7 +106,7 @@ const overviewStats = computed(() => [
           <span class="module__mark">配</span>
           <div>
             <h2>配伍关系</h2>
-            <p>预留关系网络图，后续接入药材配伍与关联强度。</p>
+            <p>展示常见中药配伍关系与关联结构。</p>
           </div>
           <span class="module__action">进入模块</span>
         </div>
@@ -147,11 +147,16 @@ const overviewStats = computed(() => [
           <span class="module__mark">草</span>
           <div>
             <h2>单味草药信息图谱</h2>
-            <p>已接入本地草药数据，可进入查看单味草药详情。</p>
+            <p>展示单味草药属性、归经与功效信息。</p>
           </div>
         </div>
         <div class="chart-space herb-preview">
-          <div class="herb-preview__image">药</div>
+          <div class="herb-preview__image">
+            <span class="herb-preview__glyph">药</span>
+            <i class="herb-preview__leaf herb-preview__leaf--one"></i>
+            <i class="herb-preview__leaf herb-preview__leaf--two"></i>
+            <small>{{ matchedHerb['药材基原'] }}</small>
+          </div>
           <dl>
             <div>
               <dt>名称</dt>
@@ -178,14 +183,27 @@ const overviewStats = computed(() => [
           <span class="module__mark">效</span>
           <div>
             <h2>功能聚类</h2>
-            <p>预留功效聚类图，当前展示真实功效分类排行。</p>
+            <p>展示中药功效分类与聚类分布。</p>
           </div>
         </div>
-        <div class="chart-space bar-preview">
-          <div v-for="effect in topEffects" :key="effect.name" class="bar-row">
-            <span>{{ effect.name }}</span>
-            <i :style="{ width: `${Math.max(18, effect.value * 6)}%` }"></i>
-            <strong>{{ effect.value }}</strong>
+        <div class="chart-space cluster-preview">
+          <div class="cluster-map" aria-hidden="true">
+            <span class="cluster-node cluster-node--core">功</span>
+            <span class="cluster-node cluster-node--a">{{ topEffects[0]?.value ?? 0 }}</span>
+            <span class="cluster-node cluster-node--b">{{ topEffects[1]?.value ?? 0 }}</span>
+            <span class="cluster-node cluster-node--c">{{ topEffects[2]?.value ?? 0 }}</span>
+            <span class="cluster-node cluster-node--d">{{ topEffects[3]?.value ?? 0 }}</span>
+            <i class="cluster-link cluster-link--a"></i>
+            <i class="cluster-link cluster-link--b"></i>
+            <i class="cluster-link cluster-link--c"></i>
+            <i class="cluster-link cluster-link--d"></i>
+          </div>
+          <div class="cluster-rank">
+            <div v-for="effect in topEffects" :key="effect.name" class="cluster-row">
+              <span>{{ effect.name }}</span>
+              <i :style="{ width: `${Math.max(22, effect.value * 6)}%` }"></i>
+              <strong>{{ effect.value }}</strong>
+            </div>
           </div>
         </div>
       </RouterLink>
@@ -195,7 +213,7 @@ const overviewStats = computed(() => [
           <span class="module__mark">经</span>
           <div>
             <h2>药性归经</h2>
-            <p>预留统计图表区域，后续替换为药性与归经可视化组件。</p>
+            <p>展示药性特征与归经分布统计。</p>
           </div>
         </div>
         <div class="chart-space meridian-preview">
@@ -699,7 +717,74 @@ const overviewStats = computed(() => [
   color: #e3ee96;
   font-family: 'KaiTi', 'STKaiti', serif;
   font-size: 2rem;
-  background: rgba(21, 93, 76, 0.22);
+  background:
+    radial-gradient(circle at 50% 36%, rgba(227, 238, 150, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(32, 121, 98, 0.38), rgba(15, 78, 66, 0.24));
+  position: relative;
+  overflow: hidden;
+}
+
+.herb-preview__image::before {
+  content: '';
+  position: absolute;
+  left: 48%;
+  top: 18%;
+  width: 1px;
+  height: 58%;
+  background: rgba(227, 238, 150, 0.32);
+  transform: rotate(18deg);
+}
+
+.herb-preview__glyph {
+  position: relative;
+  z-index: 2;
+  line-height: 1;
+  text-shadow: 0 8px 18px rgba(12, 72, 63, 0.28);
+}
+
+.herb-preview__leaf {
+  position: absolute;
+  display: block;
+  width: 2.4rem;
+  height: 1rem;
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(135deg, rgba(145, 229, 173, 0.88), rgba(227, 238, 150, 0.38));
+  opacity: 0.78;
+}
+
+.herb-preview__leaf--one {
+  left: 14%;
+  top: 24%;
+  transform: rotate(-28deg);
+}
+
+.herb-preview__leaf--two {
+  right: 12%;
+  bottom: 24%;
+  transform: rotate(152deg) scale(0.82);
+}
+
+.herb-preview__image small {
+  position: absolute;
+  left: 50%;
+  bottom: 0.45rem;
+  max-width: calc(100% - 1rem);
+  padding: 0.16rem 0.42rem;
+  border: 1px solid rgba(215, 247, 181, 0.3);
+  border-radius: 999px;
+  background: rgba(12, 72, 63, 0.32);
+  color: rgba(251, 255, 247, 0.78);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  transform: translateX(-50%);
 }
 
 .herb-preview dl {
@@ -723,29 +808,131 @@ const overviewStats = computed(() => [
   color: #fbfff7;
 }
 
-.bar-preview {
+.cluster-preview {
   display: grid;
-  align-content: center;
-  gap: 0.68rem;
+  grid-template-columns: minmax(96px, 0.95fr) 1.35fr;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.85rem;
 }
 
-.bar-row {
-  display: grid;
-  grid-template-columns: minmax(4.5rem, 1fr) 2fr auto;
-  align-items: center;
-  gap: 0.55rem;
-  color: rgba(248, 255, 249, 0.88);
-  font-size: 0.86rem;
+.cluster-map {
+  min-height: 122px;
+  position: relative;
 }
 
-.bar-row i {
-  height: 8px;
+.cluster-node {
+  position: absolute;
+  width: 2.05rem;
+  height: 2.05rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(252, 255, 229, 0.58), transparent 28%),
+    linear-gradient(145deg, rgba(157, 238, 184, 0.96), rgba(91, 197, 150, 0.9));
+  color: #155640;
+  font-size: 0.76rem;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 6px rgba(137, 231, 173, 0.08),
+    0 0 20px rgba(127, 235, 171, 0.22),
+    0 8px 18px rgba(10, 55, 45, 0.14);
+}
+
+.cluster-node--core {
+  left: 50%;
+  top: 48%;
+  width: 3rem;
+  height: 3rem;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 236, 0.72), transparent 26%),
+    linear-gradient(145deg, #e8f2a6, #9ee9b9);
+  transform: translate(-50%, -50%);
+  font-size: 1.05rem;
+  box-shadow:
+    0 0 0 8px rgba(227, 238, 150, 0.08),
+    0 0 28px rgba(154, 238, 184, 0.28),
+    0 12px 24px rgba(10, 55, 45, 0.16);
+}
+
+.cluster-node--a {
+  left: 8%;
+  top: 14%;
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
+.cluster-node--b {
+  right: 8%;
+  top: 16%;
+  width: 2.15rem;
+  height: 2.15rem;
+}
+
+.cluster-node--c {
+  left: 18%;
+  bottom: 10%;
+  width: 1.95rem;
+  height: 1.95rem;
+}
+
+.cluster-node--d {
+  right: 16%;
+  bottom: 12%;
+  width: 1.78rem;
+  height: 1.78rem;
+  font-size: 0.7rem;
+}
+
+.cluster-link {
+  position: absolute;
+  left: 50%;
+  top: 49%;
+  width: 34%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(227, 238, 150, 0.36), rgba(134, 221, 169, 0.06));
+  transform-origin: left center;
+}
+
+.cluster-link--a {
+  transform: rotate(-148deg);
+}
+
+.cluster-link--b {
+  transform: rotate(-28deg);
+}
+
+.cluster-link--c {
+  transform: rotate(138deg);
+}
+
+.cluster-link--d {
+  transform: rotate(34deg);
+}
+
+.cluster-rank {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.cluster-row {
+  display: grid;
+  grid-template-columns: minmax(3.8rem, 1fr) 1.4fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(248, 255, 249, 0.88);
+  font-size: 0.82rem;
+}
+
+.cluster-row i {
+  height: 7px;
   border-radius: 999px;
   background: linear-gradient(90deg, #91e5ad, #e3ee96);
 }
 
-.bar-row strong {
+.cluster-row strong {
   color: #fbfff7;
 }
 
@@ -854,6 +1041,7 @@ const overviewStats = computed(() => [
   .dashboard,
   .origin-preview,
   .herb-preview,
+  .cluster-preview,
   .meridian-preview {
     grid-template-columns: 1fr;
   }

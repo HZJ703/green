@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import HerbMap from '@/components/HerbMap.vue'
 </script>
 
 <template>
@@ -8,99 +9,62 @@ import { RouterLink } from 'vue-router'
       <RouterLink class="page__back" to="/">← 返回主界面</RouterLink>
       <div>
         <h1 class="page__title">草药产地分布地图</h1>
-        <p class="page__description">基于地图视图查看中药材产地分布、产区热度与药材对比信息。</p>
+        <p class="page__description">搜索药材后，地图将以颜色高亮其产区；点击省份可查看该省药材列表。</p>
       </div>
     </div>
-
-    <div class="map-frame">
-      <iframe
-        title="草药产地分布地图"
-        src="/herbmap/index.html"
-        loading="lazy"
-        class="map-frame__iframe"
-      ></iframe>
+    <div class="map-container">
+      <HerbMap />
     </div>
   </div>
 </template>
 
 <style scoped>
+/* 使页面背景与地图一致，并让地图填满剩余空间 */
 .page {
   width: 100%;
-  min-height: calc(100vh - 3rem);
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  overflow: hidden;
+  background: var(--herb-bg-deep);
 }
-
 .page__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
-  max-width: 1280px;
-  width: 100%;
-  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--herb-pine);
+  flex-shrink: 0;
+  background: var(--herb-gradient-header);
 }
-
 .page__back {
-  color: hsla(160, 100%, 32%, 1);
+  color: var(--herb-on-dark-soft);
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
-  line-height: 2rem;
 }
-
-.page__back:hover {
-  text-decoration: underline;
-}
-
+.page__back:hover { text-decoration: underline; color: var(--herb-on-dark); }
 .page__title {
-  color: var(--color-heading);
-  font-size: 1.5rem;
+  color: var(--herb-on-dark);
+  font-size: 1.2rem;
   font-weight: 600;
 }
-
 .page__description {
-  margin-top: 0.25rem;
-  color: var(--color-text);
-  opacity: 0.78;
+  margin-top: 0.1rem;
+  color: var(--herb-on-dark-soft);
+  opacity: 0.9;
+  font-size: 0.9rem;
 }
-
-.map-frame {
-  flex: 1;
-  max-width: 1280px;
-  width: 100%;
-  min-height: 720px;
-  margin: 0 auto;
+.map-container {
+  flex: 1;                    /* 占据剩余全部高度 */
+  min-height: 0;
+  padding: 0.4rem 0.8rem 0.8rem;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: #f0f7ea;
-  box-shadow: 0 18px 48px rgba(31, 92, 71, 0.14);
 }
-
-.map-frame__iframe {
-  display: block;
-  width: 100%;
+.map-container :deep(.herb-map-app) {
   height: 100%;
-  min-height: 720px;
-  border: 0;
-  background: #f0f7ea;
-}
-
-@media (max-width: 720px) {
-  .page__header {
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .page__back {
-    line-height: 1.4;
-  }
-
-  .map-frame,
-  .map-frame__iframe {
-    min-height: 640px;
-    border-radius: 14px;
-  }
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--herb-pine);
 }
 </style>

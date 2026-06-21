@@ -1,6 +1,5 @@
+// src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import CompatibilityView from '../views/CompatibilityView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +7,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('../views/HomeView.vue'),
+    },
+    {
+      path: '/origin-map',
+      name: 'origin-map',
+      component: () => import('../views/OriginMapView.vue'),
     },
     {
       path: '/herb-graph',
@@ -18,22 +22,22 @@ const router = createRouter({
     {
       path: '/compatibility',
       name: 'compatibility',
-      component: CompatibilityView,
+      component: () => import('../views/CompatibilityView.vue'),
     },
     {
-      path: '/origin-map',
-      name: 'origin-map',
-      component: () => import('../views/OriginMapView.vue'),
+      path: '/efficacy-network',
+      name: 'efficacy-network',
+      component: () => import('../views/EfficacyNetworkView.vue'),
     },
     {
       path: '/nature-meridian',
       name: 'nature-meridian',
       component: () => import('../views/NatureMeridianView.vue'),
     },
+    // 可选：重定向未匹配路由到首页
     {
-      path: '/efficacy-network',
-      name: 'efficacy-network',
-      component: () => import('../views/EfficacyNetworkView.vue'),
+      path: '/:pathMatch(.*)*',
+      redirect: '/',
     },
   ],
 })

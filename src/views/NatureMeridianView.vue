@@ -19,32 +19,39 @@ import DynamicPropertyChart from '../components/DynamicPropertyChart.vue'
 <style scoped>
 .page {
   width: 100%;
+  min-height: calc(100vh - 3rem);
+  background: var(--herb-cream);
+  border-radius: 20px;
+  border: 1px solid var(--herb-border);
+  overflow: visible;
 }
 
 .page__header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--herb-gradient-header);
+  border-bottom: 1px solid var(--herb-border-on-dark);
 }
 
 .page__back {
-  color: hsla(160, 100%, 32%, 1);
+  color: var(--herb-on-dark-soft);
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .page__back:hover {
+  color: var(--herb-on-dark);
   text-decoration: underline;
 }
 
 .page__title {
-  color: var(--color-heading);
-  font-size: 1.5rem;
+  color: var(--herb-on-dark);
+  font-size: 1.35rem;
   font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 .page__content {

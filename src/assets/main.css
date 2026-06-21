@@ -6,4 +6,5 @@
   margin: 0;
   padding: 1.5rem clamp(1rem, 4vw, 2.5rem);
   font-weight: normal;
+  min-height: 100vh;
 }

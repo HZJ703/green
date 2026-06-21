@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import rawHerbs from '../data/herbs.json'
+import HerbRelatedPanels from '../components/HerbRelatedPanels.vue'
 
+// 草药数据类型定义
 interface Herb {
   '中药名称': string
   '药性': string
@@ -14,13 +16,41 @@ interface Herb {
   '具体功效': string
 }
 
-const herbsData = ref<Herb[]>(rawHerbs as Herb[])
+// 路由实例
+const route = useRoute()
+const router = useRouter()
+
+// 响应式数据
+const herbsData = ref<Herb[]>(rawHerbs)
 const currentIndex = ref(0)
 const searchKeyword = ref('')
 
-const currentHerb = computed(() => herbsData.value[currentIndex.value] ?? null)
+// 当前显示的草药
+const currentHerb = computed(() => {
+  return herbsData.value[currentIndex.value] ?? null
+})
+
+// 数据总数
 const herbTotal = computed(() => herbsData.value.length)
 
+// Vite 动态加载图片
+const getImageUrl = (name: string) => {
+  try {
+    return new URL(`../data/images/${name}.jpg`, import.meta.url).href
+  } catch {
+    return ''
+  }
+}
+
+// 图片加载失败安全处理
+const handleImageError = (e: Event) => {
+  const target = e.currentTarget
+  if (target instanceof HTMLImageElement) {
+    target.src = ''
+  }
+}
+
+// 搜索功能
 function searchHerb() {
   const key = searchKeyword.value.trim()
   if (!key) return
@@ -28,20 +58,75 @@ function searchHerb() {
   if (idx !== -1) currentIndex.value = idx
 }
 
+// 上一页
 function prevHerb() {
-  if (currentIndex.value > 0) currentIndex.value--
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+  }
 }
+
+// 下一页
 function nextHerb() {
   if (currentIndex.value < herbTotal.value - 1) {
     currentIndex.value++
   }
 }
+
+// ----- 定位到指定药材（由路由参数触发） -----
+function locateHerb(name: string) {
+  if (!name) return
+  const target = name.trim()
+  const idx = herbsData.value.findIndex(item => item['中药名称'] === target)
+  if (idx !== -1) {
+    currentIndex.value = idx
+    searchKeyword.value = ''   // 清空搜索框，避免干扰
+  } else {
+    console.warn(`未找到药材: ${target}`)
+  }
+}
+
+// ----- 返回上一页或来源页 -----
+function goBack() {
+  const from = route.query.from as string
+  if (from) {
+    router.push(from)
+  } else {
+    router.back()
+  }
+}
+
+// ---------- 生命周期 ----------
+// 组件挂载时读取 URL 参数
+onMounted(() => {
+  const name = route.query.name as string
+  if (name) {
+    nextTick(() => {
+      locateHerb(name)
+    })
+  }
+})
+
+// 监听路由参数变化（当用户从地图多次点击不同药材时）
+watch(
+  () => route.query.name,
+  (newName) => {
+    if (newName && typeof newName === 'string') {
+      locateHerb(newName)
+    }
+  }
+)
 </script>
 
 <template>
   <div class="page">
-    <RouterLink class="page__back" to="/">← 返回主界面</RouterLink>
-    <h1 class="page__title">单味草药信息图谱</h1>
+    <!-- 头部：返回按钮 + 标题 -->
+    <div class="page__header">
+      <button class="page__back-btn" @click="goBack">
+        <i class="fas fa-arrow-left"></i> 返回
+      </button>
+      <h1 class="page__title">单味草药信息图谱</h1>
+      <span style="width: 80px;"></span> <!-- 占位保持标题居中 -->
+    </div>
 
     <div class="search-box">
       <input
@@ -53,12 +138,21 @@ function nextHerb() {
     </div>
 
     <div class="flip-container">
-      <button class="flip-btn" @click="prevHerb" :disabled="currentIndex === 0">《</button>
+      <span class="flip-text" @click="prevHerb" :class="{ disable: currentIndex === 0 }">
+        上一页 《
+      </span>
 
       <div class="card" v-if="currentHerb">
         <div class="image-box">
-          <div class="no-image">暂无药材图片</div>
+          <img
+            :src="getImageUrl(currentHerb['中药名称'])"
+            class="herb-img"
+            alt="药材"
+            @error="handleImageError"
+          />
+          <div class="no-image" v-if="!getImageUrl(currentHerb['中药名称'])">暂无图片</div>
         </div>
+
         <div class="info-list">
           <div class="info-item"><label>中药名称：</label><span>{{ currentHerb['中药名称'] }}</span></div>
           <div class="info-item"><label>药性：</label><span>{{ currentHerb['药性'] }}</span></div>
@@ -71,55 +165,72 @@ function nextHerb() {
         </div>
       </div>
 
-      <button class="flip-btn" @click="nextHerb" :disabled="currentIndex >= herbTotal - 1">》</button>
+      <span class="flip-text" @click="nextHerb" :class="{ disable: currentIndex >= herbTotal - 1 }">
+        》 下一页
+      </span>
     </div>
+
+    <HerbRelatedPanels
+      v-if="currentHerb"
+      :key="currentHerb['中药名称']"
+      :herb="currentHerb"
+    />
   </div>
 </template>
 
 <style scoped>
-/* 全局页面：古典青绿渐变 + 植物暗纹背景 */
+/* 页面整体 — 本草绿韵 */
 .page {
   min-height: 100vh;
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1rem;
   box-sizing: border-box;
-
-  background: linear-gradient(135deg, #e8f5ee 0%, #d4e9dc 50%, #c2dfce 100%);
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(120, 180, 140, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(120, 180, 140, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(100, 160, 120, 0.1) 0%, transparent 60%);
-  background-attachment: fixed;
+  background: var(--herb-cream);
+  border-radius: 20px;
+  border: 1px solid var(--herb-border);
+  box-shadow: var(--herb-shadow);
 }
 
-/* 返回链接 */
-.page__back {
-  display: inline-block;
+.page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.5rem;
-  color: #2c5c42;
-  text-decoration: none;
-  font-size: 15px;
-  letter-spacing: 1px;
-}
-.page__back:hover {
-  color: #1f4733;
-  text-decoration: underline;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--herb-border);
 }
 
-/* 标题：好看的古风字体（安全版，不崩溃） */
+.page__back-btn {
+  background: var(--herb-parchment);
+  border: 1px solid var(--herb-border-soft);
+  border-radius: 30px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--herb-forest);
+  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.page__back-btn:hover {
+  background: var(--herb-leaf);
+  color: var(--herb-ink);
+  border-color: var(--herb-mint);
+}
+
 .page__title {
   font-size: 2rem;
-  color: #234d36;
+  color: var(--herb-forest);
   text-align: center;
-  margin-bottom: 1.5rem;
   font-weight: 600;
   letter-spacing: 3px;
-  text-shadow: 0 2px 4px rgba(60, 110, 80, 0.15);
+  text-shadow: 0 2px 4px rgba(30, 77, 58, 0.1);
   font-family: "KaiTi", "STKaiti", "Serif";
+  margin: 0;
 }
 
-/* 搜索栏 */
 .search-box {
   display: flex;
   gap: 10px;
@@ -128,20 +239,20 @@ function nextHerb() {
 .search-box input {
   flex: 1;
   padding: 10px 14px;
-  border: 1px solid #b8d4c5;
+  border: 1px solid var(--herb-border-soft);
   border-radius: 8px;
   outline: none;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.7);
-  color: #234d36;
+  background: var(--herb-paper);
+  color: var(--herb-text);
 }
 .search-box input::placeholder {
-  color: #6b8c7b;
+  color: var(--herb-text-muted);
 }
 .search-box button {
   padding: 10px 20px;
-  background: #3a7d5e;
-  color: #f5f9f7;
+  background: var(--herb-sage);
+  color: var(--herb-paper);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -150,69 +261,66 @@ function nextHerb() {
   transition: all 0.3s ease;
 }
 .search-box button:hover {
-  background: #2c5c42;
+  background: var(--herb-forest);
 }
 
-/* 翻页容器 */
 .flip-container {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
 }
-
-/* 翻页按钮 */
-.flip-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid #b8d4c5;
-  background: rgba(255, 255, 255, 0.75);
-  color: #2c5c42;
-  font-size: 22px;
+.flip-text {
+  font-size: 16px;
+  color: var(--herb-sage);
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 6px 12px;
+  user-select: none;
+  transition: 0.2s;
 }
-.flip-btn:disabled {
-  opacity: 0.35;
+.flip-text:hover:not(.disable) {
+  color: var(--herb-forest);
+  text-decoration: underline;
+}
+.flip-text.disable {
+  color: var(--herb-text-muted);
   cursor: not-allowed;
 }
-.flip-btn:hover:not(:disabled) {
-  background: #3a7d5e;
-  color: #fff;
-}
 
-/* 信息卡片 */
 .card {
   flex: 1;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--herb-paper);
   border-radius: 14px;
   padding: 28px;
   display: flex;
   gap: 28px;
-  box-shadow: 0 6px 20px rgba(60, 120, 90, 0.18);
-  border: 1px solid rgba(150, 190, 170, 0.4);
+  box-shadow: var(--herb-shadow);
+  border: 1px solid var(--herb-border-soft);
 }
 
-/* 图片框 */
 .image-box {
   width: 200px;
   height: 200px;
-  background: rgba(232, 245, 238, 0.6);
+  background: var(--herb-parchment);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px dashed #b8d4c5;
+  border: 1px dashed var(--herb-border-soft);
+  position: relative;
+}
+.herb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
 }
 .no-image {
-  color: #6b8c7b;
+  color: var(--herb-text-muted);
   font-size: 14px;
+  position: absolute;
 }
 
-/* 信息文字 */
 .info-list {
   flex: 1;
 }
@@ -220,17 +328,33 @@ function nextHerb() {
   margin-bottom: 12px;
   line-height: 1.7;
   font-size: 15px;
-  color: #234d36;
+  color: var(--herb-text);
 }
 .info-item label {
   font-weight: 600;
   min-width: 90px;
   display: inline-block;
-  color: #2c5c42;
+  color: var(--herb-sage);
 }
 .info-item.detail {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed #b8d4c5;
+  border-top: 1px dashed var(--herb-border-soft);
+}
+
+@media (max-width: 700px) {
+  .page__header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .card {
+    flex-direction: column;
+    align-items: center;
+  }
+  .image-box {
+    width: 150px;
+    height: 150px;
+  }
 }
 </style>

@@ -270,13 +270,10 @@ const overviewStats = computed(() => [
 <style scoped>
 .overview {
   min-height: calc(100vh - 3rem);
-  color: #f3fff7;
-  background:
-    radial-gradient(circle at 16% 18%, rgba(151, 221, 165, 0.2), transparent 30%),
-    radial-gradient(circle at 78% 10%, rgba(78, 197, 167, 0.2), transparent 28%),
-    linear-gradient(135deg, rgba(43, 139, 111, 0.98), rgba(73, 164, 124, 0.96) 48%, rgba(33, 127, 118, 0.98)),
+  color: var(--herb-on-dark);
+  background: var(--herb-gradient-hero),
     repeating-linear-gradient(90deg, rgba(216, 246, 211, 0.055) 0 1px, transparent 1px 88px);
-  border: 1px solid rgba(199, 238, 205, 0.24);
+  border: 1px solid var(--herb-border-on-dark);
   border-radius: 24px;
   overflow: hidden;
   position: relative;
@@ -313,7 +310,7 @@ const overviewStats = computed(() => [
 }
 
 .top-nav__brand {
-  color: #f8fff9;
+  color: var(--herb-on-dark);
   font-family: 'KaiTi', 'STKaiti', serif;
   font-size: 1.18rem;
   font-weight: 700;
@@ -431,7 +428,7 @@ const overviewStats = computed(() => [
   border: 0;
   outline: 0;
   background: transparent;
-  color: #fbfff7;
+  color: var(--herb-on-dark);
   font-size: 0.98rem;
 }
 
@@ -460,7 +457,7 @@ const overviewStats = computed(() => [
 
 .stat strong {
   display: block;
-  color: #fbfff7;
+  color: var(--herb-on-dark);
   font-size: 1.85rem;
   line-height: 1;
 }
@@ -492,8 +489,7 @@ const overviewStats = computed(() => [
   border-radius: 22px;
   color: inherit;
   text-decoration: none;
-  background:
-    linear-gradient(145deg, rgba(42, 130, 104, 0.62), rgba(22, 101, 84, 0.56)),
+  background: var(--herb-gradient-card),
     rgba(21, 98, 82, 0.5);
   box-shadow:
     0 18px 42px rgba(18, 88, 68, 0.18),
@@ -522,7 +518,7 @@ const overviewStats = computed(() => [
   transform: translateY(-4px);
   border-color: rgba(181, 255, 205, 0.62);
   background:
-    linear-gradient(145deg, rgba(55, 150, 118, 0.66), rgba(29, 121, 98, 0.56)),
+    linear-gradient(145deg, rgba(55, 150, 118, 0.72), rgba(29, 121, 98, 0.62)),
     rgba(27, 112, 94, 0.54);
   box-shadow:
     0 20px 46px rgba(30, 143, 102, 0.26),
@@ -558,7 +554,7 @@ const overviewStats = computed(() => [
 }
 
 .module h2 {
-  color: #fbfff7;
+  color: var(--herb-on-dark);
   font-size: 1.08rem;
   font-weight: 700;
 }
@@ -807,7 +803,7 @@ const overviewStats = computed(() => [
 }
 
 .origin-rank strong {
-  color: #fbfff7;
+  color: var(--herb-on-dark);
 }
 
 .herb-preview {
@@ -914,7 +910,7 @@ const overviewStats = computed(() => [
 }
 
 .herb-preview dd {
-  color: #fbfff7;
+  color: var(--herb-on-dark);
 }
 
 .cluster-preview {
@@ -1042,7 +1038,7 @@ const overviewStats = computed(() => [
 }
 
 .cluster-row strong {
-  color: #fbfff7;
+  color: var(--herb-on-dark);
 }
 
 .property-preview {
@@ -1135,7 +1131,7 @@ const overviewStats = computed(() => [
 .property-donut span {
   position: relative;
   z-index: 1;
-  color: #fbfff7;
+  color: var(--herb-on-dark);
   font-size: 0.9rem;
   font-weight: 800;
 }

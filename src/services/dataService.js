@@ -1,212 +1,162 @@
+// src/services/dataService.js
+
+// 直接导入本地数据
+import { herbData } from '../data/herbData.ts'
+
 class DataService {
-  constructor() {
-    this.herbsData = []
-    this.loaded = false
-  }
-
-  async loadData() {
-    if (this.loaded) return this.herbsData
-
-    try {
-      const response = await fetch('/data/herbal-data.json')
-      if (!response.ok) throw new Error('数据加载失败')
-      const rawData = await response.json()
-      this.herbsData = rawData.map((item, index) => this.normalizeHerb(item, index))
-      this.loaded = true
-      console.log(`已加载 ${this.herbsData.length} 条药材数据`)
-      return this.herbsData
-    } catch (error) {
-      console.error('数据加载失败:', error)
-      this.herbsData = this.getMockData()
-      this.loaded = true
-      return this.herbsData
-    }
-  }
-
-  normalizeHerb(item, index) {
-    const property = item.property || item.nature || '平'
-    const category = item.category || '其他'
-
-    return {
-      id: item.id || String(index + 1),
-      name: item.name || `药材${index + 1}`,
-      property,
-      nature: property,
-      meridians: this.normalizeMeridians(item.meridians || item.meridian, category),
-      keywords: item.keywords || [item.efficacy, item.category].filter(Boolean),
-      category,
-      effect: item.effect || item.efficacy || '',
-      efficacy: item.efficacy || item.effect || '',
-      origin: item.origin || '',
-    }
-  }
-
-  normalizeMeridians(value, category) {
-    if (Array.isArray(value)) return value
-    if (typeof value === 'string' && value.trim()) {
-      return value.split(/[、,，；;\s]+/).filter(Boolean)
+    constructor() {
+        this.herbsData = [];
+        this.loaded = false;
     }
 
-    const categoryMeridianMap = {
-      补气药: ['脾', '肺'],
-      补血药: ['肝', '心'],
-      清热药: ['肺', '胃', '心'],
-      温阳药: ['脾', '肾'],
-      解表药: ['肺'],
-      调和药: ['脾', '胃'],
+    // 加载数据 - 直接使用本地的 herbData
+    async loadData() {
+        if (this.loaded && this.herbsData.length > 0) return this.herbsData;
+
+        try {
+            // 直接使用 TSherbData.ts 中的数据
+            this.herbsData = herbData.map(herb => ({
+                id: herb.name,
+                name: herb.name,
+                property: herb.nature,      // nature 对应药性
+                meridians: herb.meridian,   // meridian 对应归经
+                keywords: [],
+                effect: herb.effect,
+                category: herb.category,
+                taste: herb.taste
+            }));
+            this.loaded = true;
+            console.log('✅ 已加载本地数据：', this.herbsData.length, '条药材');
+            return this.herbsData;
+        } catch (error) {
+            console.error('数据加载失败:', error);
+            return [];
+        }
     }
 
-    return categoryMeridianMap[category] || ['脾']
-  }
-
-  async getAllHerbs() {
-    return await this.loadData()
-  }
-
-  async searchHerbs(keyword) {
-    const data = await this.loadData()
-    if (!keyword || keyword.trim() === '') return data
-
-    const lowerKeyword = keyword.toLowerCase().trim()
-    return data.filter(
-      (herb) =>
-        herb.name?.toLowerCase().includes(lowerKeyword) ||
-        herb.property?.toLowerCase().includes(lowerKeyword) ||
-        herb.keywords?.some((keywordItem) => keywordItem.toLowerCase().includes(lowerKeyword)) ||
-        herb.effect?.toLowerCase().includes(lowerKeyword),
-    )
-  }
-
-  async filterByProperty(property) {
-    const data = await this.loadData()
-    if (property === '全部') return data
-    return data.filter((herb) => herb.property === property)
-  }
-
-  async filterByMeridian(meridian) {
-    const data = await this.loadData()
-    if (meridian === '全部') return data
-    return data.filter((herb) => herb.meridians?.includes(meridian))
-  }
-
-  async filterHerbs(filters) {
-    let data = await this.loadData()
-
-    if (filters.property && filters.property !== '全部') {
-      data = data.filter((herb) => herb.property === filters.property)
+    // 获取所有药材
+    async getAllHerbs() {
+        return await this.loadData();
     }
 
-    if (filters.meridian && filters.meridian !== '全部') {
-      data = data.filter((herb) => herb.meridians?.includes(filters.meridian))
+    // 搜索药材
+    async searchHerbs(keyword) {
+        const data = await this.loadData();
+        if (!keyword || keyword.trim() === '') return [];
+        
+        const lowerKeyword = keyword.toLowerCase().trim();
+        const results = data.filter(herb => {
+            return (
+                herb.name?.toLowerCase().includes(lowerKeyword) ||
+                herb.property?.toLowerCase().includes(lowerKeyword) ||
+                herb.meridians?.some(m => m.toLowerCase().includes(lowerKeyword)) ||
+                herb.category?.toLowerCase().includes(lowerKeyword) ||
+                herb.effect?.toLowerCase().includes(lowerKeyword)
+            );
+        });
+        
+        console.log(`🔍 搜索 "${keyword}" 找到 ${results.length} 条结果`);
+        return results;
     }
 
-    if (filters.keyword && filters.keyword.trim()) {
-      const keyword = filters.keyword.toLowerCase().trim()
-      data = data.filter(
-        (herb) =>
-          herb.name?.toLowerCase().includes(keyword) ||
-          herb.property?.toLowerCase().includes(keyword) ||
-          herb.effect?.toLowerCase().includes(keyword),
-      )
+    // 按药性筛选
+    async filterByProperty(property) {
+        const data = await this.loadData();
+        if (property === '全部') return data;
+        return data.filter(herb => herb.property === property);
     }
 
-    return data
-  }
-
-  async getPropertyStats() {
-    const data = await this.loadData()
-    const stats = {}
-
-    data.forEach((herb) => {
-      const prop = herb.property
-      stats[prop] = (stats[prop] || 0) + 1
-    })
-
-    const colorMap = {
-      寒: '#67C23A',
-      微寒: '#85CE61',
-      凉: '#95D475',
-      平: '#B3E19D',
-      温: '#D1F0C5',
-      微温: '#E8F5E9',
-      热: '#F0F9EB',
-      大寒: '#529B2E',
+    // 按归经筛选
+    async filterByMeridian(meridian) {
+        const data = await this.loadData();
+        if (meridian === '全部') return data;
+        return data.filter(herb => herb.meridians?.includes(meridian));
     }
 
-    return Object.entries(stats)
-      .map(([name, value]) => ({
-        name: `${name}性`,
-        value,
-        color: colorMap[name] || '#67C23A',
-      }))
-      .sort((a, b) => b.value - a.value)
-  }
+    // 多条件筛选
+    async filterHerbs(filters) {
+        let data = await this.loadData();
 
-  async getMeridianStats() {
-    const data = await this.loadData()
-    const stats = {}
+        if (filters.property && filters.property !== '全部') {
+            data = data.filter(herb => herb.property === filters.property);
+        }
 
-    data.forEach((herb) => {
-      if (herb.meridians) {
-        herb.meridians.forEach((meridian) => {
-          if (meridian && meridian.trim()) {
-            stats[meridian] = (stats[meridian] || 0) + 1
-          }
-        })
-      }
-    })
+        if (filters.meridian && filters.meridian !== '全部') {
+            data = data.filter(herb => herb.meridians?.includes(filters.meridian));
+        }
 
-    return Object.entries(stats)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-  }
+        if (filters.keyword && filters.keyword.trim()) {
+            const kw = filters.keyword.toLowerCase().trim();
+            data = data.filter(herb =>
+                herb.name?.toLowerCase().includes(kw) ||
+                herb.property?.toLowerCase().includes(kw) ||
+                herb.effect?.toLowerCase().includes(kw)
+            );
+        }
 
-  async getCategoryStats() {
-    const data = await this.loadData()
-    const stats = {}
+        return data;
+    }
 
-    data.forEach((herb) => {
-      const category = herb.category || '其他'
-      stats[category] = (stats[category] || 0) + 1
-    })
+    // 统计药性分布
+    async getPropertyStats() {
+        const data = await this.loadData();
+        const stats = {};
+        data.forEach(herb => {
+            const prop = herb.property;
+            stats[prop] = (stats[prop] || 0) + 1;
+        });
 
-    return Object.entries(stats)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 10)
-  }
+        const colorMap = {
+            '寒': '#67C23A',
+            '微寒': '#85CE61',
+            '凉': '#95D475',
+            '平': '#B3E19D',
+            '温': '#D1F0C5',
+            '微温': '#E8F5E9',
+            '热': '#F0F9EB',
+            '大寒': '#529B2E'
+        };
 
-  getMockData() {
-    return [
-      {
-        id: '1',
-        name: '甘草',
-        property: '平',
-        meridians: ['脾', '胃', '肺'],
-        keywords: ['补气', '解毒'],
-        category: '补气药',
-        effect: '补脾益气，清热解毒',
-      },
-      {
-        id: '2',
-        name: '黄芪',
-        property: '温',
-        meridians: ['脾', '肺'],
-        keywords: ['补气', '固表'],
-        category: '补气药',
-        effect: '补气升阳，固表止汗',
-      },
-      {
-        id: '3',
-        name: '金银花',
-        property: '寒',
-        meridians: ['肺', '胃'],
-        keywords: ['清热', '解毒'],
-        category: '清热药',
-        effect: '清热解毒，疏散风热',
-      },
-    ]
-  }
+        return Object.entries(stats)
+            .map(([name, value]) => ({
+                name: `${name}性`,
+                value,
+                color: colorMap[name] || '#67C23A'
+            }))
+            .sort((a, b) => b.value - a.value);
+    }
+
+    // 统计归经分布
+    async getMeridianStats() {
+        const data = await this.loadData();
+        const stats = {};
+        data.forEach(herb => {
+            if (herb.meridians) {
+                herb.meridians.forEach(meridian => {
+                    if (meridian && meridian.trim()) {
+                        stats[meridian] = (stats[meridian] || 0) + 1;
+                    }
+                });
+            }
+        });
+        return Object.entries(stats)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }
+
+    // 统计功效分类
+    async getCategoryStats() {
+        const data = await this.loadData();
+        const stats = {};
+        data.forEach(herb => {
+            const category = herb.category || '其他';
+            stats[category] = (stats[category] || 0) + 1;
+        });
+        return Object.entries(stats)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10);
+    }
 }
 
-export default new DataService()
+export default new DataService();

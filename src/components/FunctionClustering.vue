@@ -149,7 +149,7 @@ const HERB_DATA: HerbData[] = [
   { name: '麻黄', nature: '温', meridian: '肺', efficacy: '温阳散寒', origin: '山东/河南' },
   { name: '生地', nature: '寒', meridian: '肝', efficacy: '清热泻火', origin: '浙江/安徽' },
   { name: '丹参', nature: '寒', meridian: '心', efficacy: '活血祛瘀', origin: '四川' },
-  // —— 以下为依据 1/中药信息表_已分类清洗.xlsx 增量补充 ——
+  // —— 以下为补充的中药材数据 ——
   { name: '莪术', nature: '温', meridian: '脾', efficacy: '活血祛瘀', origin: '广东/广西' },
   { name: '阿胶', nature: '平', meridian: '肺', efficacy: '补血滋阴', origin: '山东/河南' },
   { name: '沙参', nature: '微寒', meridian: '肺', efficacy: '滋阴润燥', origin: '四川' },
@@ -255,13 +255,13 @@ const SANKEY_LEGEND = [
   { name: '功效', color: '#8b7355' },
 ]
 
-// 力导向图分类基色（图例用，节点实际按 resolveHerbalColor 逐点着色）
+// 力导向图分类基色（图例 + 节点填充统一使用：节点按所属分类着该分类主题色）
 const FORCE_CATEGORY_COLORS = {
   产地: '#5cb87a',
   药性: '#c9a059',
   归经: '#527e72',
   功效: '#8b7355',
-  草药: '#4a9d66',
+  草药: '#a8d8b9',
 } as const
 
 // 桑基图节点的分类归属（按层级自动归类，用于跨图联动校验）
@@ -621,12 +621,6 @@ function initForceChart() {
   const maxCount = counts.length ? Math.max(...counts) : 1
   const minCount = counts.length ? Math.min(...counts) : 1
   const span = Math.max(maxCount - minCount, 1)
-  nodes.forEach((node: any) => {
-    const c = linkCountMap.get(node.id) || 1
-    const ratio = (c - minCount) / span
-    node.symbolSize = 20 + ratio * 30
-    node.itemStyle = { color: resolveHerbalColor(node.name) }
-  })
 
   const categories = [
     { name: '产地', itemStyle: { color: FORCE_CATEGORY_COLORS.产地 } },
@@ -635,6 +629,24 @@ function initForceChart() {
     { name: '功效', itemStyle: { color: FORCE_CATEGORY_COLORS.功效 } },
     { name: '草药', itemStyle: { color: FORCE_CATEGORY_COLORS.草药 } },
   ]
+
+  // 节点填充色 = 其所属分类的主题色：中药材节点使用「中药材」分类专属国风朱砂红，
+  // 其余维度节点（产地 / 药性 / 归经 / 功效）保持各自分类主题色，整体与现有分类配色方案一致
+  const nodeFillByCategory: Record<number, string> = {
+    0: FORCE_CATEGORY_COLORS.产地,
+    1: FORCE_CATEGORY_COLORS.药性,
+    2: FORCE_CATEGORY_COLORS.归经,
+    3: FORCE_CATEGORY_COLORS.功效,
+    4: FORCE_CATEGORY_COLORS.草药, // 中药材节点 → 「中药材」分类专属色（国风朱砂红）
+  }
+  nodes.forEach((node: any) => {
+    const c = linkCountMap.get(node.id) || 1
+    const ratio = (c - minCount) / span
+    node.symbolSize = 20 + ratio * 30
+    const categoryColor =
+      typeof node.category === 'number' ? nodeFillByCategory[node.category] : undefined
+    node.itemStyle = { color: categoryColor || FORCE_CATEGORY_COLORS.草药 }
+  })
 
   const option: EChartsOption = {
     tooltip: {
@@ -981,7 +993,7 @@ defineExpose({ searchMatches, applySearch, clearSearch })
           <div ref="forceChartRef" class="clustering__chart"></div>
           <div class="clustering__legend">
             <div class="clustering__legend-row">
-              <span class="clustering__legend-dot" style="background:#c9a059"></span>
+              <span class="clustering__legend-dot" style="background:#a8d8b9"></span>
               <span class="clustering__legend-label">中药材</span>
             </div>
             <div class="clustering__legend-row">

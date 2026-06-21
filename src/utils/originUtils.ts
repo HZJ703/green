@@ -29,13 +29,23 @@ export function parseOriginToProvinces(originStr: string): string[] {
 }
 
 export async function loadChinaGeoJSON() {
-  try {
-    const res = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-    return await res.json()
-  } catch {
-    const fallback = await fetch('https://cdn.jsdelivr.net/npm/echarts-map@1.0.0/map/json/china.json')
-    return await fallback.json()
+  const sources = [
+    `${import.meta.env.BASE_URL}geo/china.json`,
+    'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+  ]
+
+  for (const url of sources) {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) continue
+      const data = await res.json()
+      if (data?.features?.length) return data
+    } catch {
+      // try next source
+    }
   }
+
+  throw new Error('无法加载中国地图数据')
 }
 
 export function buildProvinceNameMap(geoJson: { features: Array<{ properties: { name: string } }> }): Record<string, string> {

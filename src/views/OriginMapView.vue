@@ -21,8 +21,9 @@ import HerbMap from '@/components/HerbMap.vue'
 <style scoped>
 /* 使页面背景与地图一致，并让地图填满剩余空间 */
 .page {
-  width: 100%;
+  width: calc(100% + 2 * clamp(1rem, 4vw, 2.5rem));
   height: 100vh;
+  margin: -1.5rem calc(-1 * clamp(1rem, 4vw, 2.5rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;

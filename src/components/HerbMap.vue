@@ -170,10 +170,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import * as echarts from 'echarts'
 import herbsData from '../data/herbs.json'
+import { loadChinaGeoJSON } from '../utils/originUtils'
 
 // ---------- 类型定义 ----------
 interface HerbJson {
@@ -356,13 +357,29 @@ const provinceCoords: Record<string, [number, number]> = {
   "香港": [114.17, 22.27], "澳门": [113.54, 22.19]
 }
 
-async function loadMapGeoJSON() {
+async function initMap() {
+  if (!mapRef.value) return
   try {
-    const res = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-    return await res.json()
-  } catch {
-    const fallback = await fetch('https://cdn.jsdelivr.net/npm/echarts-map@1.0.0/map/json/china.json')
-    return await fallback.json()
+    const geoJson = await loadChinaGeoJSON()
+    shortToFullMap = buildNameMap(geoJson)
+    echarts.registerMap('china', geoJson)
+    await nextTick()
+    if (!mapRef.value) return
+    myChart = echarts.init(mapRef.value)
+    renderMap()
+    requestAnimationFrame(() => myChart?.resize())
+    myChart.on('click', (params: any) => {
+      if (params.componentSubType === 'map') {
+        const full = params.name
+        const short = Object.keys(shortToFullMap).find(k => shortToFullMap[k] === full)
+        if (short && provinceHerbMap.value.has(short)) showProvinceHerbList(short)
+      } else if (params.componentSubType === 'scatter') {
+        highlightHerbOrigin(params.data.herbName)
+      }
+    })
+    window.addEventListener('resize', () => myChart?.resize())
+  } catch (err) {
+    console.error('地图加载失败:', err)
   }
 }
 
@@ -475,25 +492,6 @@ function highlightCompareProvinces(herb1: string, herb2: string) {
   })
   currentHighlightProvinces = newHighlights
   if (myChart && shortToFullMap) renderMap()
-}
-
-async function initMap() {
-  if (!mapRef.value) return
-  const geoJson = await loadMapGeoJSON()
-  shortToFullMap = buildNameMap(geoJson)
-  echarts.registerMap('china', geoJson)
-  myChart = echarts.init(mapRef.value)
-  renderMap()
-  myChart.on('click', (params: any) => {
-    if (params.componentSubType === 'map') {
-      const full = params.name
-      const short = Object.keys(shortToFullMap).find(k => shortToFullMap[k] === full)
-      if (short && provinceHerbMap.value.has(short)) showProvinceHerbList(short)
-    } else if (params.componentSubType === 'scatter') {
-      highlightHerbOrigin(params.data.herbName)
-    }
-  })
-  window.addEventListener('resize', () => myChart?.resize())
 }
 
 // ---------- 搜索 ----------
